@@ -1,5 +1,5 @@
 package game.stratigies;
 
-public interface GameStrategy {
-    void execute();
+public interface GameStrategy<T> {
+    T execute();
 }

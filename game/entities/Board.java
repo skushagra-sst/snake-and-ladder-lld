@@ -4,6 +4,18 @@ import java.util.List;
 
 public class Board {
 
-    List<Cell> board;
+    private List<Cell> board;
+
+    public Board(List<Cell> board) {
+        this.board = board;
+    }
+
+    public List<Cell> getBoard() {
+        return this.board;
+    }
+
+    public Cell getCell(int position) {
+        return position > 0 ? this.board.get(position - 1) : null;
+    }
 
 }

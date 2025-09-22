@@ -1,58 +1,70 @@
 package game;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import game.entities.Board;
 import game.entities.Cell;
-import game.stratigies.GameStrategy;
+import game.entities.Player;
+import game.factories.BoardFactory;
+import game.factories.PlayerFactory;
+import game.stratigies.MoveStrategy.MoveStrategy;
+import game.stratigies.PlayerChoosingStrategy.PlayerChoosingStrategy;
+import game.stratigies.RollingStrategy.RollingStrategy;
 
 public class Game {
 
-    private GameStrategy startStrategy;
-    private GameStrategy endStrategy;
-    private GameStrategy rollingStrategy;
-    private int gameLength;
+    private RollingStrategy rollingStrategy;
+    private MoveStrategy moveStrategy;
+    private PlayerChoosingStrategy playerChoosingStrategy;
+    private BoardFactory bFactory;
     private int numberOfPlayers;
 
     private Game() {
+
     }
 
     public void start() {
-        System.out.println("Hello! Starting the game with " + this.numberOfPlayers + " players and game length of "
-                + this.gameLength);
+        System.out.println("Hello! Starting the game!!");
+        Board b = this.bFactory.create();
 
-        List<Cell> board = new ArrayList<>();
+        List<Player> players = PlayerFactory.create(this.numberOfPlayers);
 
-        for (int i = 1; i <= this.gameLength; i++) {
-            board.add(new Cell(i));
+        this.playerChoosingStrategy.setPlayers(players);
+
+        while (true) {
+
+            int roll = this.rollingStrategy.rollDice();
+            Player turn = this.playerChoosingStrategy.get(roll);
+            boolean didWin = this.moveStrategy.move(turn, roll);
+
+            if (didWin) {
+                System.out.println("Player " + turn.getName() + " has won the game!!");
+                break;
+            }
+
+            Cell c = b.getCell(turn.getPosition());
+
+            if (c != null)
+                c.applyModifier(turn);
+
         }
 
     }
 
-    static class Builder {
-        private GameStrategy startStrategy;
-        private GameStrategy endStrategy;
-        private GameStrategy rollingStrategy;
-        private int gameLength;
+    public static class Builder {
+        private MoveStrategy moveStrategy;
+        private RollingStrategy rollingStrategy;
+        private PlayerChoosingStrategy playerChoosingStrategy;
+        private BoardFactory bFactory;
         private int numberOfPlayers;
 
-        public Builder setStartStrategy(GameStrategy startStrategy) {
-            this.startStrategy = startStrategy;
+        public Builder setMoveStrategy(MoveStrategy moveStrategy) {
+            this.moveStrategy = moveStrategy;
             return this;
         }
 
-        public Builder setEndStrategy(GameStrategy endStrategy) {
-            this.endStrategy = endStrategy;
-            return this;
-        }
-
-        public Builder setRollingStrategy(GameStrategy rollingStrategy) {
+        public Builder setRollingStrategy(RollingStrategy rollingStrategy) {
             this.rollingStrategy = rollingStrategy;
-            return this;
-        }
-
-        public Builder setGameLength(int gameLength) {
-            this.gameLength = gameLength;
             return this;
         }
 
@@ -61,15 +73,24 @@ public class Game {
             return this;
         }
 
+        public Builder setBoardFactory(BoardFactory bFactory) {
+            this.bFactory = bFactory;
+            return this;
+        }
+
+        public Builder setPlayerChoosingStrategy(PlayerChoosingStrategy playerChoosingStrategy) {
+            this.playerChoosingStrategy = playerChoosingStrategy;
+            return this;
+        }
+
         public Game build() {
             Game game = new Game();
-            game.startStrategy = this.startStrategy;
-            game.endStrategy = this.endStrategy;
+            game.moveStrategy = this.moveStrategy;
             game.rollingStrategy = this.rollingStrategy;
-            game.gameLength = this.gameLength;
+            game.bFactory = this.bFactory;
             game.numberOfPlayers = this.numberOfPlayers;
+            game.playerChoosingStrategy = this.playerChoosingStrategy;
             return game;
         }
     }
-
 }
