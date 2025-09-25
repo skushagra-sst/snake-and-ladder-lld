@@ -1,4 +1,4 @@
-![uml-class-diagram](image.png)
+![uml-class-diag](image.png)
 
 ## Parking Lot System - Detailed Use Case
 
